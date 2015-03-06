@@ -7,7 +7,7 @@
 // 'starter.controllers' is found in controllers.js
 angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
 
-.run(function($ionicPlatform) {
+.run(function($ionicPlatform, $http, $rootScope) {
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
@@ -18,7 +18,56 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
       // org.apache.cordova.statusbar required
       StatusBar.styleDefault();
     }
+
+
+
+
+      document.addEventListener('deviceready', function  () {
+          $rootScope.counter = 0;
+          // Android customization
+          console.log("device is ready");
+          cordova.plugins.backgroundMode.setDefaults({ text:'Doing heavy tasks.'});
+          // Enable background mode
+          cordova.plugins.backgroundMode.enable();
+
+          // Called when background mode has been activated
+          cordova.plugins.backgroundMode.onactivate = function () {
+              console.log("onActivate");
+          }
+
+          setInterval(function () {
+
+              //console.log("after 5sec..");
+              $rootScope.counter = $rootScope.counter+1 ;
+
+
+              //$http.get("https://www.waze.com/il-RoutingManager/routingRequest?to=x%3A34.99047239259299+y%3A32.64564167035331+bd%3Atrue&from=x%3A34.86289375647834+y%3A32.28078826204528+bd%3Atrue+s%3A37001+st_id%3A12604&returnJSON=true&at=0&callback=JSON_CALLBACK")
+              $http.get("http://192.168.1.101:8000/time.json")
+                  .then(function (data) {
+                      console.log("OK: "+JSON.stringify(data.data.time));
+                      $rootScope.time = data.data.time;
+                  }, function () {
+                      console.log("FAIL: arguments "+JSON.stringify(arguments))
+                      $rootScope.time = "error";
+                  });
+
+
+
+
+
+              //// Modify the currently displayed notification
+              //cordova.plugins.backgroundMode.configure({
+              //    text:'Running in background for more than 5s now.'
+              //});
+
+          }, 60000);
+
+
+      }, false);
+
   });
+
+
 })
 
 .config(function($stateProvider, $urlRouterProvider) {
@@ -96,7 +145,10 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
     }
   });
 
+
   // if none of the above states are matched, use this as the fallback
   $urlRouterProvider.otherwise('/tab/dash');
+
+
 
 });
